@@ -10,7 +10,6 @@ import viper.gobra.ast.internal.transform.OverflowChecksTransform.OverflowCheckA
 import viper.gobra.reporting.Source.{AnnotatedOrigin, Synthesized}
 import viper.gobra.util.Violation.violation
 import viper.silver
-import viper.silver.ast.Not
 import viper.silver.verifier.{errors => vprerr, reasons => vprrea}
 
 object DefaultErrorBackTranslator {
@@ -63,10 +62,10 @@ object DefaultErrorBackTranslator {
     val defaultReasonTransformerAux: BackTranslator.ReasonTransformer = {
       case vprrea.InsufficientPermission(Source(info)) =>
         InsufficientPermissionError(info)
-      case vprrea.AssertionFalse(Source(info)) =>
-        AssertionFalseError(info)
       case vprrea.AssertionFalse(Synthesized(info)) =>
         SynthesizedAssertionFalseError(info)
+      case vprrea.AssertionFalse(Source(info)) =>
+        AssertionFalseError(info)
       case vprrea.SeqIndexExceedsLength(Source(node), Source(index)) =>
         SeqIndexExceedsLengthError(node, index)
       case vprrea.SeqIndexNegative(Source(node), Source(index)) =>
