@@ -140,17 +140,6 @@ class DefaultErrorBackTranslator(
         LoopInvariantPreservationError(info) dueTo translate(reason)
       case vprerr.LoopInvariantNotEstablished(Source(info), reason, _) =>
         LoopInvariantEstablishmentError(info) dueTo translate(reason)
-
-      // Wytse (2020-05-22):
-      // It appears that Viper sometimes negates conditions
-      // during the translation of if-statements.
-      // However, these generated negated conditions
-      // don't appear to preserve any source information,
-      // meaning that the above case for `IfFailed` doesn't catch all errors...
-      // This extra case provides a workaround for this issue.
-      // Nevertheless, this should eventually be solved on the Viper level I think.
-      case vprerr.IfFailed(Not(Source(info)), reason, _) =>
-        IfError(info) dueTo translate(reason)
     }
 
     val transformAnnotatedError: VerificationError => VerificationError = x => {

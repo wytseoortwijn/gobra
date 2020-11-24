@@ -13,6 +13,8 @@ import viper.gobra.util.Violation
 import viper.silver.ast.utility.rewriter.{SimpleContext, Strategy, StrategyBuilder, Traverse}
 import viper.silver.ast.utility.rewriter.Traverse.Traverse
 
+import scala.annotation.tailrec
+
 object Source {
 
   sealed abstract class AbstractOrigin(val pos: SourcePosition, val tag: String)
@@ -68,10 +70,7 @@ object Source {
     }
   }
 
-  def unapply(node: vpr.Node): Option[Verifier.Info] = {
-    val info = node.getPrettyMetadata._2
-    info.getUniqueInfo[Verifier.Info]
-  }
+  def unapply(node: vpr.Node): Option[Verifier.Info] = searchInfo(node)
 
   def withInfo[N <: vpr.Node](n: (vpr.Position, vpr.Info, vpr.ErrorTrafo) => N)(source: internal.Node): N = {
     source.info match {
@@ -91,11 +90,14 @@ object Source {
     * Searches for source information  in the AST (sub)graph of `node`
     * and returns the first info encountered; or `None` if no such info exists.
     */
-  def searchInfo(node : vpr.Node) : Option[Verifier.Info] = node.meta._2 match {
-    case info: Verifier.Info => Some(info)
-    case _ => searchInfo(node.subnodes)
+  def searchInfo(node : vpr.Node) : Option[Verifier.Info] = {
+    node.getPrettyMetadata._2.getUniqueInfo[Verifier.Info] match {
+      case Some(info) => Some(info)
+      case _ => searchInfo(node.subnodes)
+    }
   }
 
+  @tailrec
   private def searchInfo(nodes : Seq[vpr.Node]) : Option[Verifier.Info] = nodes match {
     case Seq() => None
     case nodes => searchInfo(nodes.head) match {
